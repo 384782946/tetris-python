@@ -1,2 +1,2 @@
 # tetris-python
-python+PyQt5写的俄罗斯方块
+python3.4+PyQt5写的俄罗斯方块
