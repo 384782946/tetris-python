@@ -5,6 +5,7 @@ import sys
 import PyQt5
 from enum import Enum
 import random
+from PyQt5.Qt import QFont
 
 class MoveOrientation(Enum):
     Up=1
@@ -18,7 +19,7 @@ class BlockState(Enum):
     Bottom = 3
 
 class BlockType(Enum):
-    FK = 1 #fang kuai
+    FK = 1 #方块
     TU = 2 #
     YI = 3
     LL = 4
@@ -64,7 +65,7 @@ class Index():
         return self.y
     
     def setIndexState(self,state):
-        if self.isValid():
+        if self.isValid() and self.x>=0:
             widget = widgets[self.x*ColoumCount+self.y]
             if widget:
                 widget.setState(state)
@@ -230,7 +231,6 @@ class BottomBlock():
         rows = []
         count = self.rowIndex-1
         for row in range(RowCount-1,count,-1):
-            print("row:",row)
             indexs = self.getIndexAtRow(row)
             if len(indexs) == ColoumCount:
                 rows.append(row)
@@ -246,6 +246,7 @@ class BottomBlock():
                         item.setIndexState(BlockState.Bottom)
                 
 class MyDialog(QtWidgets.QDialog):
+    '''主窗口'''
     def __init__(self):
         super(MyDialog,self).__init__()
         self.scoreView = QtWidgets.QLabel("0")
@@ -253,20 +254,22 @@ class MyDialog(QtWidgets.QDialog):
         self.gridLayout.setSpacing(5)
         self.rootLayout = QtWidgets.QVBoxLayout()
         self.vboxLayout = QtWidgets.QHBoxLayout()
-        label=QtWidgets.QLabel("����:")
-        self.vboxLayout.addWidget(label)
+        self.label=QtWidgets.QLabel("按空格开始游戏!    分数:")
+        self.vboxLayout.addWidget(self.label)
         self.vboxLayout.setAlignment( QtCore.Qt.AlignRight)
         self.vboxLayout.addWidget(self.scoreView)
+        self.rootLayout.addLayout(self.gridLayout,20)
         self.rootLayout.addLayout(self.vboxLayout,1)
-        self.rootLayout.addLayout(self.gridLayout,10)
+        #初始化分数
         self.score = 0
+        #初始化所有网格块
         for i in range(0,RowCount):
             for j in range(0,ColoumCount):
                 blockWidget = BlockWidget()
                 widgets.append(blockWidget)
                 self.gridLayout.addWidget(blockWidget,i,j)
         self.setLayout(self.rootLayout)
-        self.resize(400,500)
+        self.resize(ColoumCount*45,RowCount*40)
         self.bottomBlock = None
         self.moveableBlock = None
         self.started = False
@@ -290,6 +293,7 @@ class MyDialog(QtWidgets.QDialog):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Space:
             if not self.started:
+                self.label.setText("分数:")
                 self.bottomBlock = BottomBlock()
                 self.moveableBlock = MoveableBlock()
                 self.timerid = self.startTimer(1000)
@@ -308,8 +312,9 @@ class MyDialog(QtWidgets.QDialog):
     def timerEvent(self, event):
         self.moveDown()
         return PyQt5.QtWidgets.QDialog.timerEvent(self, event)
-
-app = QtWidgets.QApplication(sys.argv)
-dlg = MyDialog()
-dlg.show()
-app.exec_()
+    
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    dlg = MyDialog()
+    dlg.show()
+    app.exec_()
